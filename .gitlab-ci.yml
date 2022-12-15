@@ -1,0 +1,113 @@
+# Variables are a key concept of GitLab CI as each job within a pipeline is
+# provided a prepared build environment that incorporates predefined variables
+# along with user-defined ones (project-level variable, SCHEDULER_PARAMETERS below)
+variables:
+  # SCHEDULER_PARAMETERS is a batch runner specific variable that is used for
+  # defining arguments that will be used when submitting a job to the appropriate
+  # scheduling system. For example, the below variable with Slurm will be:
+  #     sbatch --nodes=1 --partition=x86_64 --???
+  # Runner administrators can set a new variable name that serves the same purpose,
+  # if the appropriate variable is not found you will be warned during the job's execution.
+    ANL_THETA_SCHEDULER_PARAMETERS: "-n 1 -A MPICH_MCS -t 0:10:00 -q debug-cache-quad --attrs filesystems=home"
+    ANL_THETA_PROJECT_SERVICE_USER: "mpich"
+
+# Reference this hidden key with the keyword extends
+# and the contents will be merged.
+# Source: https://docs.gitlab.com/ee/ci/yaml/#extends
+.generic-login-shell:
+  # Tags are used to select specific Runners from a list of available runners.
+  # The admin who deploys / registers the runners defines these tags and by
+  # specifying them we can ensure our jobs are deployed on the correct system.
+  # You can identify the details of the runners available to the project by:
+  # Settings > CI/CD > Runners
+  tags: 
+    - ecp-theta
+    - shell
+  # Will ensure that the CI pipeline will 'only' run when initiated via the
+  # the web GUI (CI / CD -> Pipelines -> Run Pipeline) or scheduled pipelines
+  only:
+    - web
+    - schedules
+    - api
+    - triggers
+  before_script:
+    # We can use available system resources, in this case a module environment
+    # update accordingly to what is available on the system.
+    - module list
+
+# Each job must be assigned a stage and the stages can be defined to meet the
+# project requirements. The naming of the stages can be entirely driven by the project.
+stages:
+  - stage-configure
+  - stage-build-mpich
+  - stage-build-test
+  - stage-run-test
+
+job-configure:
+    extends: .generic-login-shell
+    stage: stage-configure
+    script:
+        - ./configure
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-$CI_JOB_STAGE"
+    paths:
+        - ./configure.log
+
+job-build-mpich:
+    extends: .generic-login-shell
+    stage: stage-build-mpich
+    script:
+        - make
+    dependencies:
+        - job-configure
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-$CI_JOB_STAGE"
+    paths:
+        - ./make.log
+
+job-build-test:
+    extends: .generic-login-shell
+    stage: stage-run-test
+    script:
+        - make hello_mpi_exe
+        - make hello_mpi_omp_exe
+    dependencies:
+        - job-build-mpich
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-$CI_JOB_STAGE"
+    paths:
+      - ./make-test-log.txt
+
+
+.generic-submit-batch:
+  tags:
+    - ecp-theta
+    - batch
+  only:
+    - web
+    - schedules
+    - api
+    - triggers
+
+# The next two jobs ('generic--mpi-test' and 'generic-mpi+omp-test') are part of the test
+# stage. They will be submitted to the appropriate runners at the same time
+# however, they don't necessarily run in parallel.
+generic-mpi-test:
+  extends: .generic-submit-batch
+  stage: quickstart-test
+  variables:
+    # CI variables observed a specific priority, this job level variable will be used
+    # as opposed to the earlier define global level one.
+    # Source: https://docs.gitlab.com/ee/ci/variables/#priority-of-environment-variables
+    SCHEDULER_PARAMETERS:  "-n=1 -A MPICH_MCS -t 0:10:00 "
+  script:
+    #run hello_mpi_exe first stage of test_hello
+    - aprun -n 1 -N 1 ./hello_mpi_exe | sort -n -k9
+    - export OMP_NUM_THREADS=2
+    - aprun -n 1 -N 1 ./hello_mpi_omp_exe | sort -n -k9
+  # The `dependencies` are used to define from which job artifacts should be
+  # downloaded from. By default ALL artifacts from previous stages will be
+  # downloaded. Source: https://docs.gitlab.com/ee/ci/yaml/#dependencies
+  dependencies:
+    - job-build-test
+
