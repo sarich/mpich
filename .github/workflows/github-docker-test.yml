@@ -2,38 +2,31 @@ name: github-docker-test
 
 on:
   push:
-    branches: [ sarich/github-docker-test ]
+    branches: [sarich/github-docker-test]
   pull_request:
-    branches: [ sarich/github-docker-test ]
+    branches: [sarich/github-docker-test]
 
 jobs:
-  
   docker:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      
     steps:
       - name: Build the Docker image
         uses: actions/checkout@v3
-      
-      
+
       - name: Login to container registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
 
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
+          context: .
           file: .github/Dockerfile
           push: true
           tags: ubuntu-latest-prereqs
-    
-
-
