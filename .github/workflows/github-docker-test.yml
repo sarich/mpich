@@ -35,4 +35,5 @@ jobs:
           context: .
           file: .github/Dockerfile
           push: true
-          tags: ubuntu-latest-prereqs
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
