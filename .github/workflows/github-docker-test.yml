@@ -39,5 +39,4 @@ jobs:
 
       - name: test
         run: |
-	  docker run --rm ${{ steps.meta.outputs.tags }}
-	  
+          docker run --rm ${{ steps.meta.outputs.tags }}
