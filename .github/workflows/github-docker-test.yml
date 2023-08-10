@@ -42,6 +42,7 @@ jobs:
         run: |
           mkdir -p results
           docker run -v results:/results --rm ${{ steps.meta.outputs.tags }}
+          ls results
           cat results/summary.junit.xml
 
       - name: upload test summary

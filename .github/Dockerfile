@@ -28,5 +28,11 @@ RUN echo "#!/bin/bash -x\n" \
 	 "cd attr\n" \
 	 "make testing | tee build.script\n" \
 	 "cp summary.junit.xml /results" > /usr/bin/build_me.sh
-RUN chmod +x /usr/bin/build_me.sh	 
-CMD ["/usr/bin/build_me.sh"]
+
+RUN echo "#!/bin/bash -x\n" \
+         "echo 'placeholder text' > summary_junit.xml\n" \
+	 "cp summary.junit.xml /results\n" \
+	 "cat /results/summary.junit.xml" > /usr/bin/build_me_dryrun.sh
+
+RUN chmod +x /usr/bin/build_me_dryrun.sh	 
+CMD ["/usr/bin/build_me_dryrun.sh"]
