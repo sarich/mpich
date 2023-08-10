@@ -30,8 +30,7 @@ RUN echo "#!/bin/bash -x\n" \
 	 "cp summary.junit.xml /results" > /usr/bin/build_me.sh
 
 RUN echo "#!/bin/bash -x\n" \
-         "echo 'placeholder text' > summary_junit.xml\n" \
-	 "cp summary.junit.xml /results\n" \
+	 "cp /results/placeholder /results/summary.junit.xml\n" \
 	 "cat /results/summary.junit.xml" > /usr/bin/build_me_dryrun.sh
 
 RUN chmod +x /usr/bin/build_me_dryrun.sh	 
