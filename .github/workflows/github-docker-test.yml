@@ -41,8 +41,7 @@ jobs:
       - name: compile and test using docker image
         run: |
           docker run ${{ steps.meta.outputs.tags }}
-          container_id=$(docker ps -q -l)
-          docker cp $(container_id):/results/summary.junit.xml ./summary.junit.xml
+          docker cp $(docker ps -q -l):/results/summary.junit.xml ./summary.junit.xml
           cat summary.junit.xml
 
       - name: upload test summary
