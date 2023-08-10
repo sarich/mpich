@@ -30,7 +30,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
 
-      - name: Build
+      - name: Build docker image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -38,6 +38,21 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: test
+      - name: compile and test using docker image
         run: |
-          docker run --rm ${{ steps.meta.outputs.tags }}
+          mkdir -p results
+          docker run -v results:/results --rm ${{ steps.meta.outputs.tags }}
+          cat results/summary.junit.xml
+
+      - name: upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: summary.junit.xml
+          path: results/summary.junit.xml
+          
+      - name: upload docker
+        uses: ishworkh/container-image-artifact-upload@v1.0.0
+        with:
+          image: {{ steps.meta.output.tags }}
+
+        
