@@ -40,10 +40,10 @@ jobs:
 
       - name: compile and test using docker image
         run: |
-          mkdir -p results
-          docker run -v results:/results --rm ${{ steps.meta.outputs.tags }}
-          ls results
-          cat results/summary.junit.xml
+          docker run ${{ steps.meta.outputs.tags }}
+          container_id=$(docker ps -q -l)
+          docker cp $(container_id):/results/summary.junit.xml ./summary.junit.xml
+          cat summary.junit.xml
 
       - name: upload test summary
         uses: actions/upload-artifact@v3
