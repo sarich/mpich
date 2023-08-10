@@ -50,9 +50,11 @@ jobs:
           name: summary.junit.xml
           path: summary.junit.xml
           
-      - name: upload docker
-        uses: ishworkh/container-image-artifact-upload@v1.0.0
-        with:
-          image: ${{ steps.meta.outputs.tags }}
+##########################
+# skipping docker upload unless we need it, about 700MB
+#      - name: upload docker
+#        uses: ishworkh/container-image-artifact-upload@v1.0.0
+#        with:
+#          image: ${{ steps.meta.outputs.tags }}
 
         

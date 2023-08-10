@@ -33,5 +33,5 @@ RUN echo "#!/bin/bash -x\n" \
 	 "cp /results/placeholder /results/summary.junit.xml\n" \
 	 "cat /results/summary.junit.xml" > /usr/bin/build_me_dryrun.sh
 
-RUN chmod +x /usr/bin/build_me_dryrun.sh	 
-CMD ["/usr/bin/build_me_dryrun.sh"]
+RUN chmod +x /usr/bin/build_me.sh	 
+CMD ["/usr/bin/build_me.sh"]
