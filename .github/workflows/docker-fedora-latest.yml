@@ -1,0 +1,60 @@
+---
+name: docker-fedora-latest
+
+"on":
+  push:
+    branches: [sarich/github-docker-test]
+  pull_request:
+    branches: [sarich/github-docker-test]
+
+jobs:
+  docker:
+    runs-on: fedora-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Build the Docker image
+        uses: actions/checkout@v3
+
+      - name: Login to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      - name: Build docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .github/workflows/fedora-latest/Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: compile and test using docker image
+        run: |
+          docker run ${{ steps.meta.outputs.tags }}
+          docker cp $(docker ps -q -l):/results/summary.junit.xml ./summary.junit.xml
+          cat summary.junit.xml
+
+      - name: upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: summary.junit.xml
+          path: summary.junit.xml
+          
+##########################
+# skipping docker upload unless we need it, about 700MB
+#      - name: upload docker
+#        uses: ishworkh/container-image-artifact-upload@v1.0.0
+#        with:
+#          image: ${{ steps.meta.outputs.tags }}
+
+        
