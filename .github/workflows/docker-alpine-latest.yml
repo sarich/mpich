@@ -9,7 +9,7 @@ name: docker-alpine-latest
 
 jobs:
   docker:
-    runs-on: alpine-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
