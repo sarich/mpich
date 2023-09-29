@@ -1,5 +1,5 @@
 ---
-name: github-docker-test
+name: docker-ubuntu-latest
 
 "on":
   push:
@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: .github/Dockerfile
+          file: .github/workflows/ubuntu-latest/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
