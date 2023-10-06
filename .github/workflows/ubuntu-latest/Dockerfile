@@ -19,7 +19,7 @@ RUN echo "#!/bin/bash -x\n" \
          "cd mpich\n" \
 	 "git submodule update --init --recursive\n" \
 	 "./autogen.sh\n" \
-	 "./configure --prefix=/install --with-device=ch3:sock\n" \
+	 "./configure --prefix=/install\n" \
 	 "make\n" \
 	 "make install\n" \
 	 "/install/bin/mpiexec -n 2 ./examples/cpi\n" \
